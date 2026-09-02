@@ -1,0 +1,264 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Algorithm Tracker</title>
+
+    <link rel="stylesheet"
+          href="style.css">
+
+</head>
+
+<body>
+
+    <header>
+
+        <h1>Algorithm Tracker</h1>
+
+        <p>我的算法刷题记录</p>
+
+    </header>
+
+
+    <main>
+        <!-- 添加题目 -->
+        <section class="add-problem">
+
+            <h2>添加刷题记录</h2>
+
+            <form id="problemForm">
+
+                <div class="form-group">
+
+                    <label for="problemName">
+                        题目
+                    </label>
+
+                    <input type="text"
+                           id="problemName"
+                           placeholder="例如：CF 1234A"
+                           required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="problemRating">
+                        Rating
+                    </label>
+
+                    <input type="number"
+                           id="problemRating"
+                           placeholder="例如：800"
+                           min="0"
+                           required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="problemTags">
+                        标签
+                    </label>
+
+                    <input type="text"
+                           id="problemTags"
+                           placeholder="例如：math, greedy, implementation"
+                           required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="problemStatus">
+                        状态
+                    </label>
+
+                    <select id="problemStatus">
+
+                        <option value="Solved">
+                            Solved
+                        </option>
+
+                        <option value="Wrong">
+                            Wrong
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <button type="submit">
+                    添加题目
+                </button>
+
+            </form>
+
+        </section>
+        <section class="stats">
+
+            <div class="card">
+
+                <h2 id="totalProblems">0</h2>
+
+                <p>总题数</p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h2 id="solvedProblems">0</h2>
+
+                <p>已解决</p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h2 id="currentRating">暂无</h2>
+
+                <p>CF Rating</p>
+
+            </div>
+
+            <div class="card">
+                <h2 id="wrongProblems">0</h2>
+                <p>错题</p>
+            </div>
+
+            <div class="card">
+                <h2 id="solveRate">0%</h2>
+                <p>正确率</p>
+            </div>
+
+        </section>
+
+        <section class="cf-profile">
+            <h2>Codeforces 账号</h2>
+
+            <div class="cf-profile-form">
+                <input type="text"
+                       id="cfHandle"
+                       placeholder="输入 Codeforces 用户名">
+
+                <button onclick="syncCodeforcesUser()">
+                    同步
+                </button>
+
+                <button onclick="syncCodeforcesProblems()">
+                    🔄 同步 Codeforces
+                </button>
+            </div>
+
+            <div id="cfProfile"></div>
+        </section>
+
+        <section class="rating-stats">
+
+            <h2>Rating 分布</h2>
+
+            <div id="ratingStats"></div>
+
+        </section>
+
+        <section class="weak-tags">
+            <h2>我的薄弱 Tag</h2>
+            <div id="weakTags"></div>
+        </section>
+
+        <section class="rating-analysis">
+            <h2>Rating 训练分析</h2>
+            <div id="ratingAnalysis"></div>
+        </section>
+
+        <section class="training-focus">
+            <h2>🎯 当前训练重点</h2>
+            <div id="trainingFocus"></div>
+        </section>
+
+        <section class="wrong-problems">
+            <h2>错题中心</h2>
+
+            <div id="wrongProblemList"></div>
+        </section>
+
+        <section>
+
+            <h2>最近刷题</h2>
+
+            <div class="problem-filter">
+                <button onclick="setFilter('All')">全部</button>
+                <button onclick="setFilter('Solved')">已解决</button>
+                <button onclick="setFilter('Wrong')">错题</button>
+            </div>
+
+            <div class="rating-filter">
+                <label for="ratingFilter">Rating：</label>
+
+                <select id="ratingFilter" onchange="setRatingFilter(this.value)">
+                    <option value="All">全部</option>
+                    <option value="800">800</option>
+                    <option value="900">900</option>
+                    <option value="1000">1000</option>
+                    <option value="1100">1100</option>
+                    <option value="1200">1200</option>
+                    <option value="1300">1300</option>
+                    <option value="1400">1400</option>
+                    <option value="1500">1500</option>
+                    <option value="1600">1600+</option>
+                </select>
+            </div>
+
+            <div class="tag-filter">
+                <span>Tag：</span>
+
+                <div id="tagFilter"></div>
+            </div>
+
+            <div class="search-box">
+                <input type="text"
+                       id="searchInput"
+                       placeholder="搜索题目，例如：CF 1234A"
+                       oninput="setSearch(this.value)">
+            </div>
+
+            <div id="problemList"></div>
+
+        </section>
+
+
+        <section>
+
+            <h2>算法分类</h2>
+
+            <div id="categoryList"></div>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+
+        <p>Algorithm Tracker · Created by Me</p>
+
+    </footer>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
