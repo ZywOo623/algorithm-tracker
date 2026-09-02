@@ -36,7 +36,17 @@ algorithm-tracker/
 
 ## Screenshot
 
-项目截图将在后续更新。
+### Homepage
+
+![Homepage](home.png)
+
+### Data Analysis
+
+![Data Analysis](analysis.png)
+
+### Problem List
+
+![Problem List](problems.png)
 
 ## Future
 
