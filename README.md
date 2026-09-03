@@ -104,7 +104,7 @@ algorithm-tracker/
 │
 └── README.md
 ```
-⚙️ How It Works / 工作原理
+## ⚙️ How It Works / 工作原理
 
 The application uses the Codeforces API to retrieve a user's submission history.
 
@@ -126,13 +126,15 @@ The processed data is stored in the browser using LocalStorage.
 
 处理后的数据使用 LocalStorage 保存在浏览器本地。
 
-🚀 Live Demo / 在线体验
+## 🚀 Live Demo / 在线体验
 
-Website:
+**Website:**
 
 https://zywoo623.github.io/algorithm-tracker/
 
-📈 Current Status / 当前状态
+---
+
+## 📈 Current Status / 当前状态
 
 The project is currently a frontend-based personal tool.
 
@@ -146,27 +148,36 @@ The project will continue to evolve as I learn more about algorithms and softwar
 
 随着后续学习，我会继续完善项目的数据分析、可视化和训练功能。
 
-🗺️ Roadmap / 后续计划
-Completed
- Codeforces user synchronization
- Submission synchronization
- Problem tracking
- Rating classification
- Tag statistics
- Wrong submission analysis
- Error rate analysis
- LocalStorage persistence
- Independent data for different handles
-Future
- Rating history chart
- More detailed statistics
- Training recommendations
- Better data visualization
- Backend service
- Database support
- User accounts
- More algorithm training features
-💡 Motivation / 项目初衷
+---
+
+## 🗺️ Roadmap / 后续计划
+
+### Completed / 已完成
+
+- [x] Codeforces user synchronization
+- [x] Submission synchronization
+- [x] Problem tracking
+- [x] Rating classification
+- [x] Tag statistics
+- [x] Wrong submission analysis
+- [x] Error rate analysis
+- [x] LocalStorage persistence
+- [x] Independent data for different handles
+
+### Future / 后续计划
+
+- [ ] Rating history chart
+- [ ] More detailed statistics
+- [ ] Training recommendations
+- [ ] Better data visualization
+- [ ] Backend service
+- [ ] Database support
+- [ ] User accounts
+- [ ] More algorithm training features
+
+---
+
+## 💡 Motivation / 项目初衷
 
 I built this project to combine programming practice with a real software project.
 
@@ -180,16 +191,20 @@ The project will continue to evolve as I learn more about algorithms, software d
 
 随着对算法、软件开发和计算机科学的学习不断深入，这个项目也会持续更新。
 
-👤 Author / 作者
+---
 
-ZywOo623
+## 👤 Author / 作者
+
+**ZywOo623**
 
 C++ · Algorithms · Competitive Programming
 
-GitHub: https://github.com/ZywOo623
-Codeforces: https://codeforces.com/profile/ZywOo623
-Personal Website: https://zywoo623.github.io/
+- GitHub: https://github.com/ZywOo623
+- Codeforces: https://codeforces.com/profile/ZywOo623
+- Personal Website: https://zywoo623.github.io/
 
-Building from zero.
+---
 
-从零开始，持续积累。
+> Building from zero.
+>
+> 从零开始，持续积累。
