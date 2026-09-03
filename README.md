@@ -103,6 +103,7 @@ algorithm-tracker/
 ├── problems.png
 │
 └── README.md
+```
 ⚙️ How It Works / 工作原理
 
 The application uses the Codeforces API to retrieve a user's submission history.
