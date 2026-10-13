@@ -1,264 +1,89 @@
-﻿<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Algorithm Tracker</title>
-
-    <link rel="stylesheet"
-          href="style.css">
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Algorithm Tracker · 算法训练助手</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-    <header>
-
-        <h1>Algorithm Tracker</h1>
-
-        <p>我的算法刷题记录</p>
-
-    </header>
-
-
-    <main>
-        <!-- 添加题目 -->
-        <section class="add-problem">
-
-            <h2>添加刷题记录</h2>
-
-            <form id="problemForm">
-
-                <div class="form-group">
-
-                    <label for="problemName">
-                        题目
-                    </label>
-
-                    <input type="text"
-                           id="problemName"
-                           placeholder="例如：CF 1234A"
-                           required>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="problemRating">
-                        Rating
-                    </label>
-
-                    <input type="number"
-                           id="problemRating"
-                           placeholder="例如：800"
-                           min="0"
-                           required>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="problemTags">
-                        标签
-                    </label>
-
-                    <input type="text"
-                           id="problemTags"
-                           placeholder="例如：math, greedy, implementation"
-                           required>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="problemStatus">
-                        状态
-                    </label>
-
-                    <select id="problemStatus">
-
-                        <option value="Solved">
-                            Solved
-                        </option>
-
-                        <option value="Wrong">
-                            Wrong
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <button type="submit">
-                    添加题目
-                </button>
-
-            </form>
-
-        </section>
-        <section class="stats">
-
-            <div class="card">
-
-                <h2 id="totalProblems">0</h2>
-
-                <p>总题数</p>
-
-            </div>
-
-
-            <div class="card">
-
-                <h2 id="solvedProblems">0</h2>
-
-                <p>已解决</p>
-
-            </div>
-
-
-            <div class="card">
-
-                <h2 id="currentRating">暂无</h2>
-
-                <p>CF Rating</p>
-
-            </div>
-
-            <div class="card">
-                <h2 id="wrongProblems">0</h2>
-                <p>错题</p>
-            </div>
-
-            <div class="card">
-                <h2 id="solveRate">0%</h2>
-                <p>正确率</p>
-            </div>
-
-        </section>
-
-        <section class="cf-profile">
-            <h2>Codeforces 账号</h2>
-
-            <div class="cf-profile-form">
-                <input type="text"
-                       id="cfHandle"
-                       placeholder="输入 Codeforces 用户名">
-
-                <button onclick="syncCodeforcesUser()">
-                    同步
-                </button>
-
-                <button onclick="syncCodeforcesProblems()">
-                    🔄 同步 Codeforces
-                </button>
-            </div>
-
-            <div id="cfProfile"></div>
-        </section>
-
-        <section class="rating-stats">
-
-            <h2>Rating 分布</h2>
-
-            <div id="ratingStats"></div>
-
-        </section>
-
-        <section class="weak-tags">
-            <h2>我的薄弱 Tag</h2>
-            <div id="weakTags"></div>
-        </section>
-
-        <section class="rating-analysis">
-            <h2>Rating 训练分析</h2>
-            <div id="ratingAnalysis"></div>
-        </section>
-
-        <section class="training-focus">
-            <h2>🎯 当前训练重点</h2>
-            <div id="trainingFocus"></div>
-        </section>
-
-        <section class="wrong-problems">
-            <h2>错题中心</h2>
-
-            <div id="wrongProblemList"></div>
-        </section>
-
-        <section>
-
-            <h2>最近刷题</h2>
-
-            <div class="problem-filter">
-                <button onclick="setFilter('All')">全部</button>
-                <button onclick="setFilter('Solved')">已解决</button>
-                <button onclick="setFilter('Wrong')">错题</button>
-            </div>
-
-            <div class="rating-filter">
-                <label for="ratingFilter">Rating：</label>
-
-                <select id="ratingFilter" onchange="setRatingFilter(this.value)">
-                    <option value="All">全部</option>
-                    <option value="800">800</option>
-                    <option value="900">900</option>
-                    <option value="1000">1000</option>
-                    <option value="1100">1100</option>
-                    <option value="1200">1200</option>
-                    <option value="1300">1300</option>
-                    <option value="1400">1400</option>
-                    <option value="1500">1500</option>
-                    <option value="1600">1600+</option>
-                </select>
-            </div>
-
-            <div class="tag-filter">
-                <span>Tag：</span>
-
-                <div id="tagFilter"></div>
-            </div>
-
-            <div class="search-box">
-                <input type="text"
-                       id="searchInput"
-                       placeholder="搜索题目，例如：CF 1234A"
-                       oninput="setSearch(this.value)">
-            </div>
-
-            <div id="problemList"></div>
-
-        </section>
-
-
-        <section>
-
-            <h2>算法分类</h2>
-
-            <div id="categoryList"></div>
-
-        </section>
-
-    </main>
-
-
-    <footer>
-
-        <p>Algorithm Tracker · Created by Me</p>
-
-    </footer>
-
-
-    <script src="script.js"></script>
-
+  <header class="hero"><div class="wrap">
+    <p class="eyebrow">ALGORITHM TRACKER</p>
+    <h1>把每次刷题，变成下一次进步</h1>
+    <p>同步 Codeforces 提交，找到薄弱点，安排一周训练，并留下真实可复盘的学习记录。</p>
+  </div></header>
+  <main class="wrap">
+    <section class="panel" aria-labelledby="account-title">
+      <div class="section-heading"><p class="eyebrow">01 / 数据来源</p><h2 id="account-title">Codeforces 账号</h2></div>
+      <form id="accountForm" class="inline-form">
+        <label class="sr-only" for="cfHandle">Codeforces 用户名</label>
+        <input id="cfHandle" autocomplete="off" placeholder="输入 Codeforces 用户名" required>
+        <button type="submit" id="syncButton">同步账号与提交</button>
+      </form>
+      <p id="syncMessage" class="muted" role="status" aria-live="polite">输入账号后同步最近 1000 条提交。数据只保存在当前浏览器。</p>
+      <div id="cfProfile"></div>
+    </section>
+    <section class="stats" aria-label="训练概览">
+      <div class="stat"><span>已尝试题目</span><strong id="totalProblems">0</strong></div>
+      <div class="stat"><span>已解决</span><strong id="solvedProblems">0</strong></div>
+      <div class="stat"><span>待攻克</span><strong id="wrongProblems">0</strong></div>
+      <div class="stat"><span>题目解决率</span><strong id="solveRate">0%</strong></div>
+      <div class="stat"><span>CF Rating</span><strong id="currentRating">暂无</strong></div>
+    </section>
+    <div class="two-column">
+      <section class="panel" aria-labelledby="focus-title">
+        <div class="section-heading"><p class="eyebrow">02 / 数据分析</p><h2 id="focus-title">最近 50 题的薄弱点</h2></div>
+        <p class="hint">按不同题目统计；“未解决占比”不等于提交错误率。少于 3 题的标签只展示，不下结论。</p>
+        <div id="weakTags"></div>
+      </section>
+      <section class="panel" aria-labelledby="plan-title">
+        <div class="section-heading"><p class="eyebrow">03 / 下一步</p><h2 id="plan-title">本周训练计划</h2></div>
+        <div id="trainingPlan"></div>
+        <button id="recommendButton" class="secondary" type="button" disabled>从 CF 题库推荐 5 题</button>
+        <p id="recommendMessage" class="hint" role="status" aria-live="polite"></p>
+        <div id="recommendations"></div>
+      </section>
+    </div>
+    <section class="panel" aria-labelledby="wrong-title">
+      <div class="section-heading"><p class="eyebrow">04 / 复盘</p><h2 id="wrong-title">错题中心</h2></div>
+      <div id="wrongProblemList"></div>
+    </section>
+    <section class="panel" aria-labelledby="ai-title">
+      <div class="section-heading"><p class="eyebrow">05 / AI 辅助</p><h2 id="ai-title">错题分析提问器</h2></div>
+      <p class="hint">选择题目，补充代码和思路，生成可复制的提问。当前版本不调用 AI，也不会上传代码；请自行粘贴到你使用的 AI 工具。</p>
+      <form id="promptForm">
+        <label for="promptProblem">错题</label><select id="promptProblem" required></select>
+        <label for="promptCode">我的代码（可选）</label><textarea id="promptCode" rows="6" placeholder="粘贴需要分析的代码"></textarea>
+        <label for="promptNotes">我的思路 / 卡住的地方（可选）</label><textarea id="promptNotes" rows="3" placeholder="例如：边界条件一直过不了"></textarea>
+        <button type="submit">生成提问</button>
+      </form>
+      <label for="promptOutput">生成的提问</label><textarea id="promptOutput" rows="10" readonly placeholder="生成后可复制"></textarea>
+      <button id="copyPrompt" type="button" class="secondary" disabled>复制提问</button>
+      <p id="promptMessage" class="hint" role="status" aria-live="polite"></p>
+    </section>
+    <section class="panel" aria-labelledby="manual-title">
+      <div class="section-heading"><p class="eyebrow">06 / 自主记录</p><h2 id="manual-title">手动添加题目</h2></div>
+      <form id="problemForm" class="problem-form">
+        <label>题目名称<input id="problemName" required placeholder="例如：CF 1234A"></label>
+        <label>Rating<input id="problemRating" type="number" min="0" step="100" placeholder="可留空"></label>
+        <label>标签<input id="problemTags" required placeholder="例如：greedy, math"></label>
+        <label>状态<select id="problemStatus"><option value="Solved">已解决</option><option value="Wrong">待攻克</option></select></label>
+        <button type="submit">添加记录</button>
+      </form>
+    </section>
+    <section class="panel" aria-labelledby="list-title">
+      <div class="section-heading"><p class="eyebrow">07 / 题目记录</p><h2 id="list-title">全部题目</h2></div>
+      <div class="filters">
+        <label>状态<select id="statusFilter"><option value="All">全部</option><option value="Solved">已解决</option><option value="Wrong">待攻克</option></select></label>
+        <label>Rating<select id="ratingFilter"><option value="All">全部</option><option value="0">未评级</option><option value="800">800–999</option><option value="1000">1000–1199</option><option value="1200">1200–1399</option><option value="1400">1400–1599</option><option value="1600">1600+</option></select></label>
+        <label>标签<select id="tagFilter"><option value="All">全部</option></select></label>
+        <label>搜索<input id="searchInput" type="search" placeholder="题目名称或编号"></label>
+      </div>
+      <div id="problemList"></div>
+    </section>
+  </main>
+  <footer>Algorithm Tracker · 用真实训练记录证明成长</footer>
+  <script src="core.js"></script><script src="script.js"></script>
 </body>
-
 </html>
+

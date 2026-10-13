@@ -1,0 +1,6 @@
+.vs/
+node_modules/
+legacy/
+*.slnx
+.DS_Store
+

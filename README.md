@@ -1,210 +1,56 @@
 # Algorithm Tracker
 
-> A personal Codeforces problem tracking and analysis tool.  
-> 一个用于记录和分析 Codeforces 刷题数据的个人项目。
+面向算法竞赛训练的个人工具：把 Codeforces 提交记录整理为题目、错题、薄弱标签和下一周的训练建议。当前是无需后端的静态网页版本。
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-black)](https://zywoo623.github.io/algorithm-tracker/)
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-black)](https://github.com/ZywOo623/algorithm-tracker)
+[GitHub 仓库](https://github.com/ZywOo623/algorithm-tracker) · [GitHub Pages 页面](https://zywoo623.github.io/algorithm-tracker/)
 
----
+## 运行
 
-## 📌 Introduction / 项目简介
+直接在浏览器打开 `index.html`。输入 Codeforces 用户名后点击“同步账号与提交”。网络请求只发送给 Codeforces 官方 API；题目记录、复习次数和账号数据保存在当前浏览器的 `localStorage`。换浏览器或清理站点数据不会自动恢复。
 
-Algorithm Tracker is a lightweight web application for tracking and analyzing Codeforces problem-solving activity.
+## 已实现
 
-Algorithm Tracker 是一个轻量级的 Codeforces 刷题记录与分析工具。
+- 同步 Codeforces 用户资料及最近 **1000 条提交**，按题目合并 AC 和错误次数。
+- 按账号分别保存记录；再次同步保留本地复习次数、上次复习时间和手动状态。
+- 查看最近 50 道不同题目的标签统计。只对样本至少 3 题且存在未解决题目的标签生成训练重点。
+- 从 Codeforces 题库筛选匹配标签和 Rating、且当前记录中未做过的 5 道题。
+- 手动添加题目、筛选、搜索、标记掌握状态和记录复习。
+- 生成针对错题的 AI 提问文本。**当前不接入大模型**，不会自动分析代码；代码只在当前页面输入框中，只有用户主动复制后才会离开页面。
+- 首次打开新版时读取旧版 `cfProblems`、`problems`、`cfHandle`、`cfRating` 数据，并存为 `algorithmTracker.v2`。旧数据键不会被删除。
 
-The project helps track solved problems, wrong submissions, problem ratings, tags, and personal training progress.
+## 统计口径
 
-主要用于记录：
+- “题目解决率” = 当前题库已解决题目数 / 当前题库题目数。
+- “未解决占比” = 最近 50 道不同题目中，某标签下仍标为待攻克的题目数 / 该标签题目数。它不是提交错误率。
+- 旧版数据没有提交时间时，会排在有时间记录的题目之后；这部分无法严格还原“最近”顺序。
+- “错误提交”与“AC”来自最近 1000 条提交的同步窗口；更早的提交不在本次 API 结果中。之前同步过、但已超出窗口的题目会保留在本地。
+- “已掌握/待攻克”是本地学习状态；可与 Codeforces 的 AC 状态不同。手动修改后再次同步仍保留。
+- 推荐题只排除当前账号题库中的已记录题目，无法保证 Codeforces 历史上从未做过。
 
-- 刷题记录
-- Wrong Submission 错误提交
-- Problem Rating 题目难度
-- Problem Tags 题目标签
-- Accepted Count 通过次数
-- Error Rate 错误率
-- Personal Training Progress 个人训练情况
+## 文件
 
----
+| 文件 | 用途 |
+| --- | --- |
+| `index.html` | 页面结构 |
+| `style.css` | 页面样式 |
+| `core.js` | 数据迁移、提交合并、薄弱点与推荐逻辑 |
+| `script.js` | 浏览器交互与 Codeforces API |
+| `tests/core.test.js` | 核心逻辑验证 |
 
-## ✨ Features / 功能
+仓库根目录的 `home.png`、`analysis.png`、`problems.png` 是**旧版界面截图**，保留作为项目演进记录；请以当前页面为准。
 
-### Codeforces Integration
+运行验证：`node --test tests/core.test.js`。
 
-- Sync Codeforces user information
-- Sync Codeforces submission history
-- Analyze submission records
-- Support different Codeforces handles
+## 下一阶段路线
 
-### Problem Tracking
+1. **完善 V1 证据**：在真实账号上验证同步、记录一次错题复盘，补截图、使用说明和具体问题修复记录。
+2. **训练闭环**：增加每周计划完成情况、错题原因标签、复习提醒；记录训练前后的解决率变化。
+3. **真正的 AI 错题助手**：接入有鉴权的后端，由用户明确提交代码；返回错误原因、分层提示和复习建议。不要把 API Key 写在前端，也不要将模型输出当作已验证结论。
+4. **作品与经历**：发布项目和技术文档；以实际贡献、真实竞赛成绩和实际申报结果更新简历。开源贡献、导师课题和大创申请是独立的后续行动，不能提前写成已完成经历。
 
-- Problem list
-- Rating classification
-- Problem tags
-- Accepted count
-- Wrong submission count
-- Error rate
-- Problem status
+项目对应的升学/竞赛方向，是持续积累可验证的训练成果和工程过程。计划目标（如 CF Rating、比赛奖项）只是目标，只有取得后才能写为成绩。
 
-### Training Analysis
+## 作者与初衷
 
-- Tag statistics
-- Wrong problem tracking
-- Error rate analysis
-- Training focus analysis
-- Personal problem history
+由 [ZywOo623](https://github.com/ZywOo623) 开始开发，用实际项目整理个人算法训练数据。项目会随真实训练和使用反馈继续迭代。
 
-### Local Data
-
-- LocalStorage persistence
-- Independent data for different Codeforces handles
-- No backend required
-
----
-
-## 🖥️ Screenshots / 项目截图
-
-### Homepage / 首页
-
-![Homepage](home.png)
-
-### Data Analysis / 数据分析
-
-![Data Analysis](analysis.png)
-
-### Problem List / 题目列表
-
-![Problem List](problems.png)
-
----
-
-## 🛠️ Tech Stack / 技术栈
-
-- HTML
-- CSS
-- JavaScript
-- Codeforces API
-- LocalStorage
-
----
-
-## 📂 Project Structure / 项目结构
-
-```text
-algorithm-tracker/
-│
-├── index.html
-├── style.css
-├── script.js
-│
-├── home.png
-├── analysis.png
-├── problems.png
-│
-└── README.md
-```
-## ⚙️ How It Works / 工作原理
-
-The application uses the Codeforces API to retrieve a user's submission history.
-
-项目通过 Codeforces API 获取用户的提交记录。
-
-The data is processed locally and used to calculate statistics for each problem.
-
-程序会在本地处理数据，并统计每道题目的相关信息：
-
-Problem
-├── Rating
-├── Tags
-├── Accepted Count
-├── Wrong Count
-├── Error Rate
-└── Status
-
-The processed data is stored in the browser using LocalStorage.
-
-处理后的数据使用 LocalStorage 保存在浏览器本地。
-
-## 🚀 Live Demo / 在线体验
-
-**Website:**
-
-https://zywoo623.github.io/algorithm-tracker/
-
----
-
-## 📈 Current Status / 当前状态
-
-The project is currently a frontend-based personal tool.
-
-目前项目是一个纯前端个人工具。
-
-It does not require a backend or database.
-
-当前不需要后端服务器和数据库。
-
-The project will continue to evolve as I learn more about algorithms and software development.
-
-随着后续学习，我会继续完善项目的数据分析、可视化和训练功能。
-
----
-
-## 🗺️ Roadmap / 后续计划
-
-### Completed / 已完成
-
-- [x] Codeforces user synchronization
-- [x] Submission synchronization
-- [x] Problem tracking
-- [x] Rating classification
-- [x] Tag statistics
-- [x] Wrong submission analysis
-- [x] Error rate analysis
-- [x] LocalStorage persistence
-- [x] Independent data for different handles
-
-### Future / 后续计划
-
-- [ ] Rating history chart
-- [ ] More detailed statistics
-- [ ] Training recommendations
-- [ ] Better data visualization
-- [ ] Backend service
-- [ ] Database support
-- [ ] User accounts
-- [ ] More algorithm training features
-
----
-
-## 💡 Motivation / 项目初衷
-
-I built this project to combine programming practice with a real software project.
-
-我希望把平时的算法训练和实际项目开发结合起来。
-
-Instead of only solving problems, I wanted to build a tool that could help me understand my own training data.
-
-相比单纯刷题，我希望通过这个项目记录自己的训练过程，并分析自己的刷题情况。
-
-The project will continue to evolve as I learn more about algorithms, software development, and computer science.
-
-随着对算法、软件开发和计算机科学的学习不断深入，这个项目也会持续更新。
-
----
-
-## 👤 Author / 作者
-
-**ZywOo623**
-
-C++ · Algorithms · Competitive Programming
-
-- GitHub: https://github.com/ZywOo623
-- Codeforces: https://codeforces.com/profile/ZywOo623
-- Personal Website: https://zywoo623.github.io/
-
----
-
-> Building from zero.
->
-> 从零开始，持续积累。
