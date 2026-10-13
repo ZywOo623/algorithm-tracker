@@ -4,4 +4,7 @@ legacy/
 assets/avatar-cat-ears.png
 *.slnx
 .DS_Store
-
+.dev.vars*
+.env*
+.wrangler/
+.publish/

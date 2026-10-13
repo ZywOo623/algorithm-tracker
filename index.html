@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Algorithm Tracker · 算法训练助手</title>
-  <link rel="stylesheet" href="style.css?v=20261013-3">
+  <link rel="stylesheet" href="style.css?v=20261013-4">
   <link rel="icon" type="image/png" href="assets/avatar-cat-ears-web.png?v=20261013-3">
   <link rel="apple-touch-icon" href="assets/avatar-cat-ears-web.png?v=20261013-3">
 </head>
@@ -54,16 +54,25 @@
       <div id="wrongProblemList"></div>
     </section>
     <section class="panel" aria-labelledby="ai-title">
-      <div class="section-heading"><p class="eyebrow">05 / AI 辅助</p><h2 id="ai-title">错题分析提问器</h2></div>
-      <p class="hint">选择题目，补充代码和思路，生成可复制的提问。当前版本不调用 AI，也不会上传代码；请自行粘贴到你使用的 AI 工具。</p>
+      <div class="section-heading"><p class="eyebrow">05 / AI 辅助</p><h2 id="ai-title">错题分析</h2></div>
+      <p class="hint">选择已有错题，或选“其他题目”手动填写。生成提问只在浏览器内完成；点击“AI 分析”才会把填写的内容发送到配置的 AI 服务。</p>
       <form id="promptForm">
         <label for="promptProblem">错题</label><select id="promptProblem" required></select>
+        <div id="customProblemFields" class="custom-fields" hidden>
+          <label for="customProblemName">自定义题目名称</label><input id="customProblemName" placeholder="例如：二分答案练习题">
+        </div>
+        <label for="promptStatement">题目描述 / 关键条件（AI 分析建议填写）</label><textarea id="promptStatement" rows="4" placeholder="粘贴题目要求、输入输出和样例；仅有题名时 AI 可能无法准确分析"></textarea>
         <label for="promptCode">我的代码（可选）</label><textarea id="promptCode" rows="6" placeholder="粘贴需要分析的代码"></textarea>
         <label for="promptNotes">我的思路 / 卡住的地方（可选）</label><textarea id="promptNotes" rows="3" placeholder="例如：边界条件一直过不了"></textarea>
-        <button type="submit">生成提问</button>
+        <div class="ai-actions"><button type="submit">生成提问</button><button id="analyzeButton" type="button" class="secondary">AI 分析</button></div>
       </form>
+      <div id="aiSettings" class="ai-settings" hidden>
+        <label for="aiAccessCode">AI 访问口令</label><input id="aiAccessCode" type="password" autocomplete="off" placeholder="部署 AI 服务时设置的访问口令">
+        <p class="hint">口令仅用于本次页面访问，不会保存到浏览器。请勿在这里填写模型厂商的 API 密钥。</p>
+      </div>
       <label for="promptOutput">生成的提问</label><textarea id="promptOutput" rows="10" readonly placeholder="生成后可复制"></textarea>
       <button id="copyPrompt" type="button" class="secondary" disabled>复制提问</button>
+      <label for="aiOutput">AI 分析结果</label><div id="aiOutput" class="ai-output" aria-live="polite">尚未分析。</div>
       <p id="promptMessage" class="hint" role="status" aria-live="polite"></p>
     </section>
     <section class="panel" aria-labelledby="manual-title">
@@ -88,7 +97,6 @@
     </section>
   </main>
   <footer>Algorithm Tracker · 用真实训练记录证明成长</footer>
-  <script src="core.js?v=20261013-2"></script><script src="script.js?v=20261013-2"></script>
+  <script src="core.js?v=20261013-2"></script><script src="ai-config.js?v=20261013-1"></script><script src="script.js?v=20261013-3"></script>
 </body>
 </html>
-

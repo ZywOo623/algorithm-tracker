@@ -52,9 +52,14 @@ button.danger:hover { background: #ffe0da; }
 .filters label { flex: 1; min-width: 145px; }
 .problem-form label { flex: 1; min-width: 150px; }
 #promptForm { display: grid; gap: 9px; margin: 18px 0; }
-#promptForm label, label[for="promptOutput"] { font-size: 13px; font-weight: 700; color: #455a71; }
-#promptForm button { justify-self: start; }
+#promptForm label, label[for="promptOutput"], label[for="aiOutput"], .ai-settings label { font-size: 13px; font-weight: 700; color: #455a71; }
+.custom-fields { display: grid; gap: 9px; }
+.custom-fields[hidden], .ai-settings[hidden] { display: none; }
+.ai-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.ai-settings { margin: 12px 0 18px; }
+.ai-settings input { margin-top: 8px; }
 #promptOutput { margin: 8px 0; }
+.ai-output { min-height: 100px; margin: 8px 0 14px; padding: 14px; border: 1px solid #ced9e5; border-radius: 9px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.65; }
 .plan-card { background: #eef8f8; border-radius: 12px; padding: 18px; margin-bottom: 14px; line-height: 1.65; }
 .plan-card strong { color: #125b6b; }
 .plan-card p { margin: 7px 0 0; }
@@ -65,4 +70,3 @@ footer { text-align: center; padding: 24px; color: #748197; font-size: 13px; }
 @media (max-width: 800px) { .stats { grid-template-columns: repeat(2, 1fr); } .two-column { grid-template-columns: 1fr; gap: 0; } .problem-row { align-items: start; flex-direction: column; } }
 @media (max-width: 480px) { .wrap { width: min(100% - 24px, 1120px); } .panel { padding: 18px; } .stats { gap: 8px; } .stat { padding: 15px; } .stat strong { font-size: 25px; } .inline-form button { width: 100%; } }
 @media (max-width: 600px) { .hero-content { gap: 14px; align-items: flex-start; } .brand-avatar { width: 72px; height: 72px; border-radius: 16px; } .hero { padding-top: 32px; } .brand-name img { width: 22px; height: 22px; } }
-

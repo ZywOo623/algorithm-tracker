@@ -163,8 +163,18 @@ function renderProblems() {
   const promptValue = promptSelect.value;
   promptSelect.replaceChildren(new Option("请选择错题", ""));
   wrongItems.forEach(item => promptSelect.add(new Option(item.name, item.id)));
-  promptSelect.value = wrongItems.some(item => item.id === promptValue) ? promptValue : "";
+  promptSelect.add(new Option("其他题目（自己填写）", "custom"));
+  promptSelect.value = promptValue === "custom" || wrongItems.some(item => item.id === promptValue) ? promptValue : "";
+  updateCustomProblemFields();
 }
+
+function updateCustomProblemFields() {
+  const custom = $("promptProblem").value === "custom";
+  $("customProblemFields").hidden = !custom;
+  $("customProblemName").required = custom;
+}
+
+$("promptProblem").addEventListener("change", updateCustomProblemFields);
 
 function render() {
   renderProfile();
@@ -260,21 +270,69 @@ $("recommendButton").addEventListener("click", async () => {
   }
 });
 
-$("promptForm").addEventListener("submit", event => {
-  event.preventDefault();
-  const item = problems().find(problem => problem.id === $("promptProblem").value);
-  if (!item) return;
-  $("promptOutput").value = [
+function buildPrompt() {
+  const selected = $("promptProblem").value;
+  const item = selected === "custom"
+    ? { name: $("customProblemName").value.trim(), rating: 0, tags: [], status: "Wrong", wrongCount: 0 }
+    : problems().find(problem => problem.id === selected);
+  if (!item?.name) throw new Error("请先选择错题，或填写自定义题目名称。");
+  const cfMatch = item.id?.match(/^cf:(\d+)([A-Za-z][A-Za-z0-9]*)$/);
+  return [
     "请作为算法竞赛助教，帮助我复盘这道题。先提问和提示，不要直接给完整代码或最终答案。",
     `题目：${item.name}`,
+    cfMatch ? `Codeforces 链接：https://codeforces.com/problemset/problem/${cfMatch[1]}/${cfMatch[2]}` : "",
     `难度：${item.rating || "未知"}；标签：${item.tags.join(", ") || "未知"}`,
     `当前状态：${item.status === "Solved" ? "已解决但曾出错" : "待攻克"}；错误提交次数：${item.wrongCount}`,
+    `题目描述或关键条件：\n${$("promptStatement").value.trim() || "尚未提供，请不要猜测题意"}`,
     `我的思路或疑问：\n${$("promptNotes").value.trim() || "尚未填写"}`,
     `我的代码：\n${$("promptCode").value.trim() || "尚未提供"}`,
     "请按以下顺序回答：1. 帮我定位可能的边界情况或思维漏洞；2. 给不超过三个逐级提示；3. 给可自测的样例；4. 建议何时复习。若信息不足，请先询问我。"
-  ].join("\n\n");
-  $("copyPrompt").disabled = false;
-  $("promptMessage").textContent = "提问已生成；代码仍只在当前页面中。";
+  ].filter(Boolean).join("\n\n");
+}
+
+$("promptForm").addEventListener("submit", event => {
+  event.preventDefault();
+  try {
+    $("promptOutput").value = buildPrompt();
+    $("copyPrompt").disabled = false;
+    $("promptMessage").textContent = "提问已生成；内容仍只在当前页面中。";
+  } catch (error) {
+    $("promptMessage").textContent = error.message;
+  }
+});
+
+const aiEndpoint = String(globalThis.ALGORITHM_TRACKER_AI_ENDPOINT || "").trim();
+$("aiSettings").hidden = !aiEndpoint;
+$("analyzeButton").addEventListener("click", async () => {
+  if (!aiEndpoint) {
+    $("promptMessage").textContent = "AI 服务尚未部署。现在可先生成提问并复制到其他 AI 工具。";
+    return;
+  }
+  let prompt;
+  try { prompt = buildPrompt(); }
+  catch (error) { $("promptMessage").textContent = error.message; return; }
+  const accessCode = $("aiAccessCode").value;
+  if (!accessCode) { $("promptMessage").textContent = "请填写 AI 访问口令。"; return; }
+  const button = $("analyzeButton");
+  button.disabled = true;
+  $("aiOutput").textContent = "正在分析…";
+  $("promptMessage").textContent = "只有这次点击才会发送题目、代码和思路。";
+  try {
+    const response = await fetch(aiEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accessCode}` },
+      body: JSON.stringify({ prompt })
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || `AI 服务返回 ${response.status}`);
+    $("aiOutput").textContent = result.analysis || "AI 未返回内容，请稍后重试。";
+    $("promptMessage").textContent = `分析完成。今日服务请求数：${result.used}/${result.limit}。AI 建议可能有误，请结合题目与提交结果核对。`;
+  } catch (error) {
+    $("aiOutput").textContent = "分析未完成。";
+    $("promptMessage").textContent = `AI 分析失败：${error.message}`;
+  } finally {
+    button.disabled = false;
+  }
 });
 
 $("copyPrompt").addEventListener("click", async () => {
@@ -288,4 +346,3 @@ $("copyPrompt").addEventListener("click", async () => {
 });
 
 render();
-
