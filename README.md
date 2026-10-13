@@ -35,6 +35,8 @@
 | `style.css` | 页面样式 |
 | `core.js` | 数据迁移、提交合并、薄弱点与推荐逻辑 |
 | `script.js` | 浏览器交互与 Codeforces API |
+| `assets/avatar-cat-ears-web.png` | 用户选择的猫耳头像网页压缩版；用于页面头像和标签页图标 |
+| `assets/training-mark.svg` | 独立的训练图表标记 |
 | `tests/core.test.js` | 核心逻辑验证 |
 
 仓库根目录的 `home.png`、`analysis.png`、`problems.png` 是**旧版界面截图**，保留作为项目演进记录；请以当前页面为准。

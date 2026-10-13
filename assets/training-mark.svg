@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="上升的训练图表">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#6652a6"/>
+      <stop offset="1" stop-color="#c978b2"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#bg)"/>
+  <path d="M13 49h38" fill="none" stroke="#ffffffa8" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="16" y="34" width="8" height="15" rx="2" fill="#fff"/>
+  <rect x="28" y="27" width="8" height="22" rx="2" fill="#fff"/>
+  <rect x="40" y="18" width="8" height="31" rx="2" fill="#fff"/>
+  <path d="m18 27 14-8 12-8" fill="none" stroke="#f6d6ee" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
