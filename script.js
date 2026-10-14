@@ -290,29 +290,21 @@ function promptProblemAndInput() {
   } };
 }
 
-$("promptForm").addEventListener("submit", event => {
-  event.preventDefault();
-  try {
-    const { item, input } = promptProblemAndInput();
-    $("promptOutput").value = Core.buildStudyPrompt(item, input);
-    $("copyPrompt").disabled = false;
-    $("promptMessage").textContent = "提问已生成，可以复制给其他 AI；此操作不会调用网页 AI。";
-  } catch (error) {
-    $("promptMessage").textContent = error.message;
-  }
-});
-
 const aiEndpoint = String(globalThis.ALGORITHM_TRACKER_AI_ENDPOINT || "").trim();
 $("aiSettings").hidden = !aiEndpoint;
-$("analyzeButton").addEventListener("click", async () => {
+let aiPending = false;
+
+async function requestAi(mode) {
+  if (aiPending) return;
   if (!aiEndpoint) {
-    $("promptMessage").textContent = "AI 服务尚未部署。现在可先生成提问并复制到其他 AI 工具。";
+    $("promptMessage").textContent = "AI 服务尚未部署，暂时无法生成提问或分析错题。";
     return;
   }
-  let prompt;
+  let prompt, context;
   try {
     const { item, input } = promptProblemAndInput();
-    prompt = Core.buildErrorAnalysisPrompt(item, input);
+    prompt = mode === "question" ? Core.buildStudyPrompt(item, input) : Core.buildErrorAnalysisPrompt(item, input);
+    if (mode === "question") context = Core.buildProblemContext(item, input);
   }
   catch (error) { $("promptMessage").textContent = error.message; return; }
   const accessCode = $("aiAccessCode").value;
@@ -321,30 +313,52 @@ $("analyzeButton").addEventListener("click", async () => {
     $("aiAccessCode").focus();
     return;
   }
-  const button = $("analyzeButton");
-  button.disabled = true;
-  button.textContent = "正在分析…";
-  $("aiOutput").textContent = "正在分析…";
-  $("promptMessage").textContent = "只有这次点击才会发送题目、代码和思路。";
+  aiPending = true;
+  const button = mode === "question" ? $("generateQuestionButton") : $("analyzeButton");
+  $("generateQuestionButton").disabled = true;
+  $("analyzeButton").disabled = true;
+  button.textContent = mode === "question" ? "正在优化提问…" : "正在分析…";
+  if (mode === "question") {
+    $("promptOutput").value = "";
+    $("copyPrompt").disabled = true;
+  } else $("aiOutput").textContent = "正在分析…";
+  $("promptMessage").textContent = "正在请求 AI；本次会使用一次今日额度。";
   try {
     const response = await fetch(aiEndpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accessCode}` },
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify({ mode, prompt })
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || `AI 服务返回 ${response.status}`);
-    $("aiOutput").textContent = result.analysis || "AI 未返回内容，请稍后重试。";
-    $("promptMessage").textContent = `分析完成。今日服务请求数：${result.used}/${result.limit}。AI 建议可能有误，请结合题目与提交结果核对。`;
-    $("aiOutput").scrollIntoView({ block: "nearest" });
+    if (mode === "question") {
+      if (!result.question?.trim()) throw new Error("AI 未返回提问，请稍后重试。");
+      $("promptOutput").value = `${result.question.trim()}\n\n${context}`;
+      $("copyPrompt").disabled = false;
+      $("promptMessage").textContent = `AI 已优化提问，可以复制。今日 AI 请求数：${result.used}/${result.limit}。`;
+      $("promptOutput").scrollIntoView({ block: "nearest" });
+    } else {
+      $("aiOutput").textContent = result.analysis || "AI 未返回内容，请稍后重试。";
+      $("promptMessage").textContent = `分析完成。今日 AI 请求数：${result.used}/${result.limit}。AI 建议可能有误，请结合题目与提交结果核对。`;
+      $("aiOutput").scrollIntoView({ block: "nearest" });
+    }
   } catch (error) {
-    $("aiOutput").textContent = "分析未完成。";
-    $("promptMessage").textContent = `AI 分析失败：${error.message}`;
+    if (mode === "analysis") $("aiOutput").textContent = "分析未完成。";
+    $("promptMessage").textContent = `${mode === "question" ? "AI 生成提问" : "AI 分析"}失败：${error.message}`;
   } finally {
-    button.disabled = false;
-    button.textContent = "AI 分析";
+    aiPending = false;
+    $("generateQuestionButton").disabled = false;
+    $("analyzeButton").disabled = false;
+    $("generateQuestionButton").textContent = "AI 优化提问";
+    $("analyzeButton").textContent = "AI 分析";
   }
+}
+
+$("promptForm").addEventListener("submit", event => {
+  event.preventDefault();
+  requestAi("question");
 });
+$("analyzeButton").addEventListener("click", () => requestAi("analysis"));
 
 $("copyPrompt").addEventListener("click", async () => {
   try {
