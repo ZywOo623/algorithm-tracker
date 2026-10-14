@@ -79,3 +79,18 @@ test("无错误记录和自定义题目不虚构错误或代码", () => {
   assert.throws(() => Core.buildStudyPrompt(null), /请先选择/);
 });
 
+test("生成提问和网页 AI 分析使用不同的目的说明，但共享题目事实", () => {
+  const item = Core.normalizeProblem({ id: "cf:789C", source: "cf", name: "CF 789C", status: "Wrong", wrongCount: 1, tags: ["implementation"] });
+  const input = { statement: "处理数组边界", code: "if (i <= n) {}", notes: "最后一个元素出错" };
+  const question = Core.buildStudyPrompt(item, input);
+  const analysis = Core.buildErrorAnalysisPrompt(item, input);
+  assert.match(question, /请你帮我找出思路或代码可能错在哪里/);
+  assert.match(analysis, /请直接分析这道算法题哪里可能做错了/);
+  assert.match(analysis, /已确认的错误/);
+  assert.match(analysis, /不能声称已定位代码错误/);
+  for (const fact of ["CF 789C", "处理数组边界", "if (i <= n) {}", "最后一个元素出错"]) {
+    assert.ok(question.includes(fact));
+    assert.ok(analysis.includes(fact));
+  }
+});
+
