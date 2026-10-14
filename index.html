@@ -55,7 +55,7 @@
     </section>
     <section class="panel" aria-labelledby="ai-title">
       <div class="section-heading"><p class="eyebrow">05 / AI 辅助</p><h2 id="ai-title">错题分析</h2></div>
-      <p class="hint">选择已记录题目，或选“其他题目”手动填写。生成提示词会结合题目记录与本次填写的题面、代码和思路；只有点击“AI 分析”才会发送给 AI 服务。</p>
+      <p class="hint">选择已记录题目，或选“其他题目”手动填写。“生成提问”会整理出一段可复制给其他 AI 的问法；“AI 分析”会直接检查思路和代码哪里可能出错。只有点击“AI 分析”才会发送内容给网页 AI 服务。</p>
       <form id="promptForm">
         <label for="promptProblem">选择题目</label><select id="promptProblem" required></select>
         <div id="customProblemFields" class="custom-fields" hidden>
@@ -64,7 +64,7 @@
         <label for="promptStatement">题目描述 / 关键条件（AI 分析建议填写）</label><textarea id="promptStatement" rows="4" placeholder="粘贴题目要求、输入输出和样例；仅有题名时 AI 可能无法准确分析"></textarea>
         <label for="promptCode">我的代码（可选）</label><textarea id="promptCode" rows="6" placeholder="粘贴需要分析的代码"></textarea>
         <label for="promptNotes">我的思路 / 卡住的地方（可选）</label><textarea id="promptNotes" rows="3" placeholder="例如：边界条件一直过不了"></textarea>
-        <div class="ai-actions"><button type="submit">生成提示词</button><button id="analyzeButton" type="button" class="secondary">AI 分析</button></div>
+        <div class="ai-actions"><button type="submit">生成提问</button><button id="analyzeButton" type="button" class="secondary">AI 分析</button></div>
       </form>
       <div id="aiSettings" class="ai-settings" hidden>
         <label for="aiAccessCode">AI 访问口令</label><input id="aiAccessCode" type="password" autocomplete="off" placeholder="部署 AI 服务时设置的访问口令">
@@ -72,8 +72,8 @@
       </div>
       <p id="promptMessage" class="hint" role="status" aria-live="polite"></p>
       <label for="aiOutput">AI 分析结果</label><div id="aiOutput" class="ai-output" aria-live="polite">尚未分析。</div>
-      <label for="promptOutput">生成的提示词</label><textarea id="promptOutput" rows="10" readonly placeholder="生成后可复制"></textarea>
-      <button id="copyPrompt" type="button" class="secondary" disabled>复制提示词</button>
+      <label for="promptOutput">给其他 AI 的提问</label><textarea id="promptOutput" rows="10" readonly placeholder="生成后可复制"></textarea>
+      <button id="copyPrompt" type="button" class="secondary" disabled>复制提问</button>
     </section>
     <section class="panel" aria-labelledby="manual-title">
       <div class="section-heading"><p class="eyebrow">06 / 自主记录</p><h2 id="manual-title">手动添加题目</h2></div>
