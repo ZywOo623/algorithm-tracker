@@ -135,7 +135,7 @@
       .slice(0, 5);
   }
 
-  function buildStudyPrompt(problem, input = {}) {
+  function buildProblemContext(problem, input = {}) {
     if (!problem?.name?.trim()) throw new Error("请先选择已记录题目，或填写自定义题目名称。");
     const statement = String(input.statement || "").trim();
     const code = String(input.code || "").trim();
@@ -156,15 +156,30 @@
       code ? `我的代码：\n${code}` : ""
     ].filter(Boolean);
     return [
-      "请作为算法竞赛助教，根据下面已有的题目记录和我本次补充的信息，帮我复盘这道题。请先引导我思考，不要直接给完整代码或最终答案。",
       `【${problem.source === "custom" ? "本次填写的题目" : "已有题目记录"}】\n${recorded.join("\n")}`,
-      `【本次补充】\n${supplied.join("\n\n")}`,
-      "请先核对题意及已知条件。如果没有完整题面，且你无法访问题目链接，请先向我索取题面，不要凭题名猜测题意。若没有代码，不要声称看过我的实现。",
-      "信息足够时，请依次：1. 根据我的记录和思路指出值得检查的边界或思维漏洞，区分事实与推测；2. 给最多三个逐级提示；3. 给我能自行验证的样例或检查方法；4. 结合复习记录建议下一次复习重点。"
+      `【本次补充】\n${supplied.join("\n\n")}`
     ].join("\n\n");
   }
 
-  const api = { STORAGE_KEY, keyFor, emptyProfile, normalizeProblem, loadState, activeProfile, mergeSubmissions, analyze, recommend, buildStudyPrompt };
+  function buildStudyPrompt(problem, input = {}) {
+    return [
+      "我在复盘下面这道算法题，想请你帮我找出思路或代码可能错在哪里。请根据我提供的记录、题面、代码和卡点来回答；先核对题意，再引导我自己修正，不要直接给完整代码或最终答案。",
+      buildProblemContext(problem, input),
+      "如果缺少完整题面，且你无法访问题目链接，请先问我要题面，不要凭题名猜题意。如果我没有提供代码，请分析思路中的风险，不要说你已经检查过代码。",
+      "信息足够时，请指出可确认的错误及依据，并将尚待验证的疑点分开说明；给一个能暴露问题的小样例，再给最多三个逐级提示。"
+    ].join("\n\n");
+  }
+
+  function buildErrorAnalysisPrompt(problem, input = {}) {
+    return [
+      "请直接分析这道算法题哪里可能做错了。根据题面、我的代码和思路定位具体问题；不要只给通用解题提示，也不要直接给完整正确代码。",
+      buildProblemContext(problem, input),
+      "先检查题意是否足够。如果缺少完整题面，且无法访问题目链接，请先索取题面，不能凭题名猜测。没有代码时，只能分析思路中可能的风险，不能声称已定位代码错误。",
+      "信息足够时请按顺序回答：1. 已确认的错误：指出对应代码、条件或推理步骤及理由；2. 尚待验证的风险：明确标注为猜测；3. 一个尽可能小的反例、预期结果和错误表现（无法运行代码时不要编造实际运行结果）；4. 修正方向和我应该重新检查的边界条件。"
+    ].join("\n\n");
+  }
+
+  const api = { STORAGE_KEY, keyFor, emptyProfile, normalizeProblem, loadState, activeProfile, mergeSubmissions, analyze, recommend, buildStudyPrompt, buildErrorAnalysisPrompt };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.AlgorithmCore = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);
