@@ -135,7 +135,36 @@
       .slice(0, 5);
   }
 
-  const api = { STORAGE_KEY, keyFor, emptyProfile, normalizeProblem, loadState, activeProfile, mergeSubmissions, analyze, recommend };
+  function buildStudyPrompt(problem, input = {}) {
+    if (!problem?.name?.trim()) throw new Error("请先选择已记录题目，或填写自定义题目名称。");
+    const statement = String(input.statement || "").trim();
+    const code = String(input.code || "").trim();
+    const notes = String(input.notes || "").trim();
+    const cfMatch = String(problem.id || "").match(/^cf:(\d+)([A-Za-z][A-Za-z0-9]*)$/);
+    const status = problem.status === "Wrong" ? "待攻克" : problem.wrongCount > 0 ? "已解决，曾有错误提交" : "已解决";
+    const recorded = [
+      `题目：${problem.name.trim()}`,
+      cfMatch ? `Codeforces 链接：https://codeforces.com/problemset/problem/${cfMatch[1]}/${cfMatch[2]}` : "",
+      `难度：${problem.rating || "未知"}；标签：${problem.tags?.join("、") || "未知"}`,
+      `当前状态：${status}`,
+      problem.source === "manual" ? "这是一条手动添加的题目记录，提交次数可能没有同步。" : problem.source === "custom" ? "" : `错误提交 ${problem.wrongCount || 0} 次；通过提交 ${problem.acceptedCount || 0} 次。`,
+      problem.reviewCount ? `已复习 ${problem.reviewCount} 次${problem.lastReview ? `；最近复习：${problem.lastReview}` : ""}。` : ""
+    ].filter(Boolean);
+    const supplied = [
+      statement ? `题目描述、输入输出或关键条件：\n${statement}` : "题目描述：本次未提供。",
+      notes ? `我的思路或卡点：\n${notes}` : "",
+      code ? `我的代码：\n${code}` : ""
+    ].filter(Boolean);
+    return [
+      "请作为算法竞赛助教，根据下面已有的题目记录和我本次补充的信息，帮我复盘这道题。请先引导我思考，不要直接给完整代码或最终答案。",
+      `【${problem.source === "custom" ? "本次填写的题目" : "已有题目记录"}】\n${recorded.join("\n")}`,
+      `【本次补充】\n${supplied.join("\n\n")}`,
+      "请先核对题意及已知条件。如果没有完整题面，且你无法访问题目链接，请先向我索取题面，不要凭题名猜测题意。若没有代码，不要声称看过我的实现。",
+      "信息足够时，请依次：1. 根据我的记录和思路指出值得检查的边界或思维漏洞，区分事实与推测；2. 给最多三个逐级提示；3. 给我能自行验证的样例或检查方法；4. 结合复习记录建议下一次复习重点。"
+    ].join("\n\n");
+  }
+
+  const api = { STORAGE_KEY, keyFor, emptyProfile, normalizeProblem, loadState, activeProfile, mergeSubmissions, analyze, recommend, buildStudyPrompt };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.AlgorithmCore = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);
