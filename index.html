@@ -70,10 +70,10 @@
         <label for="aiAccessCode">AI 访问口令</label><input id="aiAccessCode" type="password" autocomplete="off" placeholder="部署 AI 服务时设置的访问口令">
         <p class="hint">口令仅用于本次页面访问，不会保存到浏览器。请勿在这里填写模型厂商的 API 密钥。</p>
       </div>
+      <p id="promptMessage" class="hint" role="status" aria-live="polite"></p>
+      <label for="aiOutput">AI 分析结果</label><div id="aiOutput" class="ai-output" aria-live="polite">尚未分析。</div>
       <label for="promptOutput">生成的提问</label><textarea id="promptOutput" rows="10" readonly placeholder="生成后可复制"></textarea>
       <button id="copyPrompt" type="button" class="secondary" disabled>复制提问</button>
-      <label for="aiOutput">AI 分析结果</label><div id="aiOutput" class="ai-output" aria-live="polite">尚未分析。</div>
-      <p id="promptMessage" class="hint" role="status" aria-live="polite"></p>
     </section>
     <section class="panel" aria-labelledby="manual-title">
       <div class="section-heading"><p class="eyebrow">06 / 自主记录</p><h2 id="manual-title">手动添加题目</h2></div>
