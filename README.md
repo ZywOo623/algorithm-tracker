@@ -53,7 +53,7 @@
 
 1. 在 Cloudflare 控制台进入 **Workers & Pages → Create application → Import a repository**，连接 GitHub 仓库 `ZywOo623/algorithm-tracker`，选择 `main` 分支并部署。项目根目录已有 `wrangler.toml`，Worker 名称为 `algorithm-tracker-ai`，默认部署命令为 `npx wrangler deploy`。`wrangler.toml` 已配置 Workers AI 和 SQLite Durable Object。
 2. 部署后进入该 Worker 的 **Settings → Variables and Secrets → Add**，新增类型为 **Secret**、名称为 `ACCESS_CODE` 的长随机访问口令，再点击 **Deploy**。该值只存于 Cloudflare，不写进仓库。网页上使用 AI 时，输入的是这个**访问口令**，不是 API Key。
-3. 将 Worker 地址后加 `/analyze`，例如 `https://algorithm-tracker-ai.<子域>.workers.dev/analyze`，填入 `ai-config.js` 的 `ALGORITHM_TRACKER_AI_ENDPOINT`，提交并发布网页。
+3. 本项目的 Worker 地址是 `https://algorithm-tracker-ai.2804684803.workers.dev/analyze`，已填入 `ai-config.js` 并发布到网页。该地址是公开接口地址，不含口令。
 4. 在 Cloudflare 控制台确认仍处于 Workers Free 计划。若以后升级为付费计划，请同时设置平台预算提醒；当前 `DAILY_REQUEST_LIMIT = "20"` 是独立于平台免费用量的每日请求数限制，按 UTC 日期重置，可在 `wrangler.toml` 调整。请求失败也会占用一次，以避免重复请求绕过限额。
 
 也可以用命令行完成前两步：`npx wrangler login` → `npx wrangler deploy` → `npx wrangler secret put ACCESS_CODE`。
