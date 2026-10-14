@@ -1,6 +1,7 @@
 name = "algorithm-tracker-ai"
 main = "worker/ai.js"
 compatibility_date = "2026-10-13"
+preview_urls = false
 
 [ai]
 binding = "AI"
