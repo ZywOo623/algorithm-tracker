@@ -179,7 +179,7 @@
     ].join("\n\n");
   }
 
-  const api = { STORAGE_KEY, keyFor, emptyProfile, normalizeProblem, loadState, activeProfile, mergeSubmissions, analyze, recommend, buildStudyPrompt, buildErrorAnalysisPrompt };
+  const api = { STORAGE_KEY, keyFor, emptyProfile, normalizeProblem, loadState, activeProfile, mergeSubmissions, analyze, recommend, buildProblemContext, buildStudyPrompt, buildErrorAnalysisPrompt };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.AlgorithmCore = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);
