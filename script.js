@@ -278,24 +278,25 @@ $("recommendButton").addEventListener("click", async () => {
   }
 });
 
-function buildPrompt() {
+function promptProblemAndInput() {
   const selected = $("promptProblem").value;
   const item = selected === "custom"
     ? { name: $("customProblemName").value.trim(), source: "custom", rating: 0, tags: [], status: "Wrong", wrongCount: 0 }
     : problems().find(problem => problem.id === selected);
-  return Core.buildStudyPrompt(item, {
+  return { item, input: {
     statement: $("promptStatement").value,
     code: $("promptCode").value,
     notes: $("promptNotes").value
-  });
+  } };
 }
 
 $("promptForm").addEventListener("submit", event => {
   event.preventDefault();
   try {
-    $("promptOutput").value = buildPrompt();
+    const { item, input } = promptProblemAndInput();
+    $("promptOutput").value = Core.buildStudyPrompt(item, input);
     $("copyPrompt").disabled = false;
-    $("promptMessage").textContent = "提示词已生成；内容仍只在当前页面中。";
+    $("promptMessage").textContent = "提问已生成，可以复制给其他 AI；此操作不会调用网页 AI。";
   } catch (error) {
     $("promptMessage").textContent = error.message;
   }
@@ -305,11 +306,14 @@ const aiEndpoint = String(globalThis.ALGORITHM_TRACKER_AI_ENDPOINT || "").trim()
 $("aiSettings").hidden = !aiEndpoint;
 $("analyzeButton").addEventListener("click", async () => {
   if (!aiEndpoint) {
-    $("promptMessage").textContent = "AI 服务尚未部署。现在可先生成提示词并复制到其他 AI 工具。";
+    $("promptMessage").textContent = "AI 服务尚未部署。现在可先生成提问并复制到其他 AI 工具。";
     return;
   }
   let prompt;
-  try { prompt = buildPrompt(); }
+  try {
+    const { item, input } = promptProblemAndInput();
+    prompt = Core.buildErrorAnalysisPrompt(item, input);
+  }
   catch (error) { $("promptMessage").textContent = error.message; return; }
   const accessCode = $("aiAccessCode").value;
   if (!accessCode.trim()) {
