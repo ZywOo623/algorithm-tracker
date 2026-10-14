@@ -58,3 +58,24 @@ test("薄弱点需要足够样本，推荐排除已做题", () => {
   assert.deepEqual(Core.recommend(catalog, items, "greedy", 1200, 1400).map(item => item.name), ["new"]);
 });
 
+test("提示词结合已有 CF 记录和本次填写内容", () => {
+  const item = Core.normalizeProblem({ id: "cf:123A", source: "cf", name: "CF 123A", rating: 1200, tags: ["binary search"], status: "Solved", wrongCount: 2, acceptedCount: 1, reviewCount: 3, lastReview: "2026/10/13" });
+  const prompt = Core.buildStudyPrompt(item, { statement: "求第一个不小于 x 的位置", code: "while (l < r) {}", notes: "边界处理不确定" });
+  for (const detail of ["https://codeforces.com/problemset/problem/123/A", "已解决，曾有错误提交", "错误提交 2 次", "已复习 3 次", "求第一个不小于 x 的位置", "while (l < r) {}", "边界处理不确定"]) {
+    assert.ok(prompt.includes(detail), detail);
+  }
+});
+
+test("无错误记录和自定义题目不虚构错误或代码", () => {
+  const solved = Core.buildStudyPrompt(Core.normalizeProblem({ id: "cf:456B", source: "cf", name: "CF 456B", status: "Solved", acceptedCount: 1 }));
+  assert.ok(solved.includes("当前状态：已解决\n"));
+  assert.ok(!solved.includes("曾有错误提交"));
+  const custom = Core.buildStudyPrompt({ name: "自选练习题", source: "custom", status: "Wrong", tags: [] }, { notes: "想练习动态规划" });
+  assert.ok(custom.includes("【本次填写的题目】"));
+  assert.ok(custom.includes("想练习动态规划"));
+  assert.ok(custom.includes("题目描述：本次未提供"));
+  assert.ok(!custom.includes("手动添加的题目记录"));
+  assert.ok(!custom.includes("我的代码："));
+  assert.throws(() => Core.buildStudyPrompt(null), /请先选择/);
+});
+
