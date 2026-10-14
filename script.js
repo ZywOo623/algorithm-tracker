@@ -220,6 +220,7 @@ $("accountForm").addEventListener("submit", async event => {
     $("syncMessage").textContent = `同步失败：${error.message}。请检查用户名或网络，原有数据没有被覆盖。`;
   } finally {
     button.disabled = false;
+    button.textContent = "AI 分析";
   }
 });
 
@@ -312,9 +313,14 @@ $("analyzeButton").addEventListener("click", async () => {
   try { prompt = buildPrompt(); }
   catch (error) { $("promptMessage").textContent = error.message; return; }
   const accessCode = $("aiAccessCode").value;
-  if (!accessCode) { $("promptMessage").textContent = "请填写 AI 访问口令。"; return; }
+  if (!accessCode.trim()) {
+    $("promptMessage").textContent = "请填写 AI 访问口令。";
+    $("aiAccessCode").focus();
+    return;
+  }
   const button = $("analyzeButton");
   button.disabled = true;
+  button.textContent = "正在分析…";
   $("aiOutput").textContent = "正在分析…";
   $("promptMessage").textContent = "只有这次点击才会发送题目、代码和思路。";
   try {
@@ -327,6 +333,7 @@ $("analyzeButton").addEventListener("click", async () => {
     if (!response.ok) throw new Error(result.error || `AI 服务返回 ${response.status}`);
     $("aiOutput").textContent = result.analysis || "AI 未返回内容，请稍后重试。";
     $("promptMessage").textContent = `分析完成。今日服务请求数：${result.used}/${result.limit}。AI 建议可能有误，请结合题目与提交结果核对。`;
+    $("aiOutput").scrollIntoView({ block: "nearest" });
   } catch (error) {
     $("aiOutput").textContent = "分析未完成。";
     $("promptMessage").textContent = `AI 分析失败：${error.message}`;
