@@ -161,10 +161,18 @@ function renderProblems() {
   else wrongItems.forEach(item => wrong.append(problemRow(item, true)));
   const promptSelect = $("promptProblem");
   const promptValue = promptSelect.value;
-  promptSelect.replaceChildren(new Option("请选择错题", ""));
-  wrongItems.forEach(item => promptSelect.add(new Option(item.name, item.id)));
+  promptSelect.replaceChildren(new Option("请选择已记录题目", ""));
+  const wrongGroup = document.createElement("optgroup");
+  wrongGroup.label = "待攻克 / 曾出错";
+  wrongItems.forEach(item => wrongGroup.append(new Option(item.name, item.id)));
+  if (wrongItems.length) promptSelect.add(wrongGroup);
+  const otherItems = all.filter(item => item.status !== "Wrong" && item.wrongCount === 0);
+  const otherGroup = document.createElement("optgroup");
+  otherGroup.label = "其他已记录题目";
+  otherItems.forEach(item => otherGroup.append(new Option(item.name, item.id)));
+  if (otherItems.length) promptSelect.add(otherGroup);
   promptSelect.add(new Option("其他题目（自己填写）", "custom"));
-  promptSelect.value = promptValue === "custom" || wrongItems.some(item => item.id === promptValue) ? promptValue : "";
+  promptSelect.value = promptValue === "custom" || all.some(item => item.id === promptValue) ? promptValue : "";
   updateCustomProblemFields();
 }
 
@@ -220,7 +228,6 @@ $("accountForm").addEventListener("submit", async event => {
     $("syncMessage").textContent = `同步失败：${error.message}。请检查用户名或网络，原有数据没有被覆盖。`;
   } finally {
     button.disabled = false;
-    button.textContent = "AI 分析";
   }
 });
 
@@ -274,21 +281,13 @@ $("recommendButton").addEventListener("click", async () => {
 function buildPrompt() {
   const selected = $("promptProblem").value;
   const item = selected === "custom"
-    ? { name: $("customProblemName").value.trim(), rating: 0, tags: [], status: "Wrong", wrongCount: 0 }
+    ? { name: $("customProblemName").value.trim(), source: "custom", rating: 0, tags: [], status: "Wrong", wrongCount: 0 }
     : problems().find(problem => problem.id === selected);
-  if (!item?.name) throw new Error("请先选择错题，或填写自定义题目名称。");
-  const cfMatch = item.id?.match(/^cf:(\d+)([A-Za-z][A-Za-z0-9]*)$/);
-  return [
-    "请作为算法竞赛助教，帮助我复盘这道题。先提问和提示，不要直接给完整代码或最终答案。",
-    `题目：${item.name}`,
-    cfMatch ? `Codeforces 链接：https://codeforces.com/problemset/problem/${cfMatch[1]}/${cfMatch[2]}` : "",
-    `难度：${item.rating || "未知"}；标签：${item.tags.join(", ") || "未知"}`,
-    `当前状态：${item.status === "Solved" ? "已解决但曾出错" : "待攻克"}；错误提交次数：${item.wrongCount}`,
-    `题目描述或关键条件：\n${$("promptStatement").value.trim() || "尚未提供，请不要猜测题意"}`,
-    `我的思路或疑问：\n${$("promptNotes").value.trim() || "尚未填写"}`,
-    `我的代码：\n${$("promptCode").value.trim() || "尚未提供"}`,
-    "请按以下顺序回答：1. 帮我定位可能的边界情况或思维漏洞；2. 给不超过三个逐级提示；3. 给可自测的样例；4. 建议何时复习。若信息不足，请先询问我。"
-  ].filter(Boolean).join("\n\n");
+  return Core.buildStudyPrompt(item, {
+    statement: $("promptStatement").value,
+    code: $("promptCode").value,
+    notes: $("promptNotes").value
+  });
 }
 
 $("promptForm").addEventListener("submit", event => {
@@ -296,7 +295,7 @@ $("promptForm").addEventListener("submit", event => {
   try {
     $("promptOutput").value = buildPrompt();
     $("copyPrompt").disabled = false;
-    $("promptMessage").textContent = "提问已生成；内容仍只在当前页面中。";
+    $("promptMessage").textContent = "提示词已生成；内容仍只在当前页面中。";
   } catch (error) {
     $("promptMessage").textContent = error.message;
   }
@@ -306,7 +305,7 @@ const aiEndpoint = String(globalThis.ALGORITHM_TRACKER_AI_ENDPOINT || "").trim()
 $("aiSettings").hidden = !aiEndpoint;
 $("analyzeButton").addEventListener("click", async () => {
   if (!aiEndpoint) {
-    $("promptMessage").textContent = "AI 服务尚未部署。现在可先生成提问并复制到其他 AI 工具。";
+    $("promptMessage").textContent = "AI 服务尚未部署。现在可先生成提示词并复制到其他 AI 工具。";
     return;
   }
   let prompt;
@@ -339,6 +338,7 @@ $("analyzeButton").addEventListener("click", async () => {
     $("promptMessage").textContent = `AI 分析失败：${error.message}`;
   } finally {
     button.disabled = false;
+    button.textContent = "AI 分析";
   }
 });
 
@@ -353,3 +353,4 @@ $("copyPrompt").addEventListener("click", async () => {
 });
 
 render();
+
