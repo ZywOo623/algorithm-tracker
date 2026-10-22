@@ -38,7 +38,7 @@ button.danger:hover { background: #ffe0da; }
 .data-row, .problem-row { border-top: 1px solid #e7edf3; padding: 13px 0; }
 .data-row { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
 .data-row small { color: #65758a; display: block; margin-top: 4px; }
-.problem-row { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+.problem-row { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; }
 .problem-main { min-width: 0; }
 .problem-main strong { display: block; overflow-wrap: anywhere; }
 .problem-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; color: #65758a; font-size: 13px; margin-top: 7px; }
@@ -47,6 +47,14 @@ button.danger:hover { background: #ffe0da; }
 .badge.solved { background: #e9f7ee; color: #22724a; }
 .actions { display: flex; flex-wrap: wrap; gap: 7px; flex-shrink: 0; }
 .actions button { padding: 8px 10px; font-size: 13px; }
+.review-panel { width: 100%; border-radius: 10px; background: #f6f9fc; padding: 12px 14px; }
+.review-panel summary { cursor: pointer; color: #145a6d; font-weight: 700; }
+.review-form { display: grid; gap: 12px; margin-top: 14px; }
+.review-form label { display: grid; gap: 6px; color: #455a71; font-size: 13px; font-weight: 700; }
+.review-form button { justify-self: start; }
+.review-form .hint { margin: 0; }
+.retry-actions { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.retry-actions p { width: 100%; margin: 0; }
 .filters { margin-bottom: 14px; }
 .filters label, .problem-form label { display: grid; gap: 6px; color: #455a71; font-size: 13px; font-weight: 700; }
 .filters label { flex: 1; min-width: 145px; }
@@ -70,3 +78,4 @@ footer { text-align: center; padding: 24px; color: #748197; font-size: 13px; }
 @media (max-width: 800px) { .stats { grid-template-columns: repeat(2, 1fr); } .two-column { grid-template-columns: 1fr; gap: 0; } .problem-row { align-items: start; flex-direction: column; } }
 @media (max-width: 480px) { .wrap { width: min(100% - 24px, 1120px); } .panel { padding: 18px; } .stats { gap: 8px; } .stat { padding: 15px; } .stat strong { font-size: 25px; } .inline-form button { width: 100%; } }
 @media (max-width: 600px) { .hero-content { gap: 14px; align-items: flex-start; } .brand-avatar { width: 72px; height: 72px; border-radius: 16px; } .hero { padding-top: 32px; } .brand-name img { width: 22px; height: 22px; } }
+
