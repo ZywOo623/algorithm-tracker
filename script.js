@@ -13,6 +13,8 @@ const save = () => localStorage.setItem(Core.STORAGE_KEY, JSON.stringify(state))
 const profile = () => Core.activeProfile(state);
 const problems = () => profile().problems;
 const percent = value => `${Math.round(value * 100)}%`;
+const retryLabels = { independent: "独立完成", hinted: "看提示后完成", failed: "仍未做出" };
+let expandedReviewId = "";
 
 function empty(container, message) {
   container.replaceChildren(node("p", "empty", message));
@@ -96,27 +98,24 @@ function problemRow(item, inWrongCenter = false) {
   if (inWrongCenter) {
     meta.append(node("span", "", `错误提交 ${item.wrongCount} · AC ${item.acceptedCount} · 复习 ${item.reviewCount} 次`));
     if (item.lastReview) meta.append(node("span", "", `上次复习 ${item.lastReview}`));
+    const reviewState = Core.reviewState(item);
+    const scheduleLabels = { due: `该重做了 · ${item.nextReviewAt}`, upcoming: `计划重做 · ${item.nextReviewAt}`, completed: "已独立重做", unscheduled: "尚未安排重做" };
+    meta.append(node("span", `badge ${reviewState === "due" ? "wrong" : reviewState === "completed" ? "solved" : ""}`, scheduleLabels[reviewState]));
+    const latestRetry = item.retryHistory.at(-1);
+    if (latestRetry) meta.append(node("span", "", `最近重做：${retryLabels[latestRetry.outcome]}（${latestRetry.date}）`));
   }
   main.append(meta);
   const actions = node("div", "actions");
-  const toggle = node("button", "secondary", item.status === "Solved" ? "标记待攻克" : "标记已掌握");
-  toggle.type = "button";
-  toggle.addEventListener("click", () => {
-    item.status = item.status === "Solved" ? "Wrong" : "Solved";
-    if (item.source === "cf") item.statusOverride = item.status;
-    if (item.status === "Wrong" && item.source === "manual") item.wrongCount = Math.max(1, item.wrongCount);
-    save(); render();
-  });
-  actions.append(toggle);
-  if (inWrongCenter) {
-    const review = node("button", "secondary", "记录复习");
-    review.type = "button";
-    review.addEventListener("click", () => {
-      item.reviewCount++;
-      item.lastReview = new Date().toLocaleDateString("zh-CN");
+  if (!inWrongCenter) {
+    const toggle = node("button", "secondary", item.status === "Solved" ? "标记待攻克" : "标记已掌握");
+    toggle.type = "button";
+    toggle.addEventListener("click", () => {
+      item.status = item.status === "Solved" ? "Wrong" : "Solved";
+      if (item.source === "cf") item.statusOverride = item.status;
+      if (item.status === "Wrong" && item.source === "manual") item.wrongCount = Math.max(1, item.wrongCount);
       save(); render();
     });
-    actions.append(review);
+    actions.append(toggle);
   }
   if (item.source === "manual" && !inWrongCenter) {
     const remove = node("button", "danger", "删除");
@@ -128,7 +127,62 @@ function problemRow(item, inWrongCenter = false) {
     actions.append(remove);
   }
   row.append(main, actions);
+  if (inWrongCenter) row.append(reviewPanel(item));
   return row;
+}
+
+function reviewPanel(item) {
+  const details = node("details", "review-panel");
+  details.open = expandedReviewId === item.id;
+  details.addEventListener("toggle", () => {
+    if (details.isConnected) expandedReviewId = details.open ? item.id : "";
+  });
+  details.append(node("summary", "", "记录错因与重做"));
+  const form = node("form", "review-form");
+  const thoughtLabel = node("label", "", "当时的思路");
+  const thought = node("textarea");
+  thought.rows = 3; thought.maxLength = 2000; thought.required = true;
+  thought.placeholder = "我当时准备怎么做？";
+  thought.value = item.initialThought;
+  thoughtLabel.append(thought);
+  const reasonLabel = node("label", "", "错误原因");
+  const reason = node("textarea");
+  reason.rows = 3; reason.maxLength = 2000; reason.required = true;
+  reason.placeholder = "例如：二分右边界写错；仍不确定时写下具体卡点";
+  reason.value = item.errorReason;
+  reasonLabel.append(reason);
+  const dateLabel = node("label", "", "下次重做日期");
+  const date = node("input");
+  date.type = "date"; date.required = true;
+  date.value = item.nextReviewAt || Core.addDays(Core.dateKey(new Date()), 3);
+  dateLabel.append(date);
+  const saveButton = node("button", "", "保存复盘计划");
+  saveButton.type = "submit";
+  const message = node("p", "hint");
+  message.setAttribute("role", "status");
+  form.append(thoughtLabel, reasonLabel, dateLabel, saveButton, message);
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    try {
+      Object.assign(item, Core.saveReviewPlan(item, { initialThought: thought.value, errorReason: reason.value, nextReviewAt: date.value }));
+      save(); render();
+    } catch (error) { message.textContent = error.message; }
+  });
+  details.append(form);
+  const outcome = node("div", "retry-actions");
+  outcome.append(node("p", "hint", "按计划重新做题后，记录这次是否独立完成。看提示后做出会继续安排重做。"));
+  for (const [key, label] of Object.entries(retryLabels)) {
+    const button = node("button", key === "independent" ? "" : "secondary", label);
+    button.type = "button";
+    button.disabled = !item.initialThought || !item.errorReason || !item.nextReviewAt;
+    button.addEventListener("click", () => {
+      Object.assign(item, Core.recordRetry(item, key));
+      save(); render();
+    });
+    outcome.append(button);
+  }
+  details.append(outcome);
+  return details;
 }
 
 function renderProblems() {
@@ -156,7 +210,14 @@ function renderProblems() {
   else filtered.forEach(item => list.append(problemRow(item)));
   const wrong = $("wrongProblemList");
   wrong.replaceChildren();
-  const wrongItems = all.filter(item => item.status === "Wrong" || item.wrongCount > 0);
+  const wrongItems = all.filter(item => item.status === "Wrong" || item.wrongCount > 0)
+    .sort((a, b) => {
+      const priority = { due: 0, unscheduled: 1, upcoming: 2, completed: 3 };
+      return priority[Core.reviewState(a)] - priority[Core.reviewState(b)] || (a.nextReviewAt || "").localeCompare(b.nextReviewAt || "") || b.lastAttemptAt - a.lastAttemptAt;
+    });
+  const dueCount = wrongItems.filter(item => Core.reviewState(item) === "due").length;
+  const completedCount = wrongItems.filter(item => Core.reviewState(item) === "completed").length;
+  $("reviewSummary").textContent = `该重做 ${dueCount} 题 · 已独立重做 ${completedCount} 题。先记录错因，再按计划重做。`;
   if (!wrongItems.length) empty(wrong, "暂无错题。提交记录中曾出错、或标记为待攻克的题目会出现在这里。");
   else wrongItems.forEach(item => wrong.append(problemRow(item, true)));
   const promptSelect = $("promptProblem");
