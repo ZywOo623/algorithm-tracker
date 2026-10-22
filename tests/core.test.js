@@ -94,3 +94,27 @@ test("生成提问和网页 AI 分析使用不同的目的说明，但共享题�
   }
 });
 
+test("错因和重做计划在同步后保留，提示后完成仍需重做", () => {
+  const item = Core.normalizeProblem({ id: "cf:123A", source: "cf", name: "CF 123A", status: "Wrong", wrongCount: 1, tags: ["binary search"] });
+  assert.throws(() => Core.saveReviewPlan(item, { initialThought: "", errorReason: "边界错", nextReviewAt: "2026-10-25" }), /请填写/);
+  const planned = Core.saveReviewPlan(item, { initialThought: "二分答案", errorReason: "右边界写错", nextReviewAt: "2026-10-25" });
+  assert.equal(Core.reviewState(planned, "2026-10-24"), "upcoming");
+  assert.equal(Core.reviewState(planned, "2026-10-25"), "due");
+  const hinted = Core.recordRetry(planned, "hinted", "2026-10-25");
+  assert.equal(hinted.status, "Wrong");
+  assert.equal(hinted.nextReviewAt, "2026-10-28");
+  assert.deepEqual(hinted.retryHistory, [{ date: "2026-10-25", outcome: "hinted" }]);
+  const synced = Core.mergeSubmissions([hinted], [{ problem: { contestId: 123, index: "A", name: "A", tags: ["binary search"] }, verdict: "OK", creationTimeSeconds: 123 }])[0];
+  assert.equal(synced.errorReason, "右边界写错");
+  assert.equal(synced.nextReviewAt, "2026-10-28");
+  assert.equal(synced.retryHistory.length, 1);
+  assert.equal(synced.status, "Wrong");
+  const independent = Core.recordRetry(synced, "independent", "2026-10-28");
+  assert.equal(independent.status, "Solved");
+  assert.equal(independent.statusOverride, "Solved");
+  assert.equal(independent.nextReviewAt, null);
+  assert.equal(Core.reviewState(independent, "2026-10-29"), "completed");
+  assert.equal(independent.reviewCount, 2);
+  assert.match(Core.buildProblemContext(independent), /记录的错误原因：右边界写错/);
+});
+
