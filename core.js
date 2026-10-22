@@ -5,6 +5,17 @@
   const emptyProfile = (handle = "") => ({ handle, rating: null, maxRating: null, rank: "", problems: [], lastSynced: null });
   const keyFor = handle => String(handle || "").trim().toLowerCase();
   const numberOrZero = value => Number.isFinite(Number(value)) ? Math.max(0, Number(value)) : 0;
+  const RETRY_OUTCOMES = ["independent", "hinted", "failed"];
+  const dateKey = date => {
+    const value = date instanceof Date ? date : new Date(date);
+    return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
+  };
+  const validDateKey = value => /^\d{4}-\d{2}-\d{2}$/.test(value) && dateKey(`${value}T12:00:00`) === value;
+  const addDays = (value, days) => {
+    const date = new Date(`${value}T12:00:00`);
+    date.setDate(date.getDate() + days);
+    return dateKey(date);
+  };
   const safeParse = (value, fallback) => {
     try { return JSON.parse(value) ?? fallback; } catch { return fallback; }
   };
@@ -30,6 +41,12 @@
       acceptedCount,
       reviewCount: numberOrZero(raw.reviewCount),
       lastReview: raw.lastReview || null,
+      initialThought: String(raw.initialThought || "").slice(0, 2000),
+      errorReason: String(raw.errorReason || "").slice(0, 2000),
+      nextReviewAt: validDateKey(String(raw.nextReviewAt || "")) ? raw.nextReviewAt : null,
+      retryHistory: (Array.isArray(raw.retryHistory) ? raw.retryHistory : [])
+        .filter(entry => validDateKey(String(entry?.date || "")) && RETRY_OUTCOMES.includes(entry?.outcome))
+        .map(entry => ({ date: entry.date, outcome: entry.outcome })),
       lastAttemptAt: numberOrZero(raw.lastAttemptAt || raw.createdAt),
       errorRate: wrongCount + acceptedCount ? wrongCount / (wrongCount + acceptedCount) : 0
     };
@@ -135,6 +152,37 @@
       .slice(0, 5);
   }
 
+  function saveReviewPlan(problem, input) {
+    const initialThought = String(input.initialThought || "").trim();
+    const errorReason = String(input.errorReason || "").trim();
+    const nextReviewAt = String(input.nextReviewAt || "");
+    if (!initialThought || !errorReason) throw new Error("请填写当时的思路和错误原因。");
+    if (initialThought.length > 2000 || errorReason.length > 2000) throw new Error("每项内容最多 2000 字。");
+    if (!validDateKey(nextReviewAt)) throw new Error("请选择有效的重做日期。");
+    return { ...problem, initialThought, errorReason, nextReviewAt };
+  }
+
+  function recordRetry(problem, outcome, today = dateKey(new Date())) {
+    if (!RETRY_OUTCOMES.includes(outcome)) throw new Error("请选择重做结果。");
+    if (!validDateKey(today)) throw new Error("日期无效。");
+    const independent = outcome === "independent";
+    return {
+      ...problem,
+      status: independent ? "Solved" : "Wrong",
+      statusOverride: problem.source === "cf" ? (independent ? "Solved" : "Wrong") : problem.statusOverride,
+      reviewCount: numberOrZero(problem.reviewCount) + 1,
+      lastReview: today,
+      nextReviewAt: independent ? null : addDays(today, outcome === "hinted" ? 3 : 1),
+      retryHistory: [...(problem.retryHistory || []), { date: today, outcome }]
+    };
+  }
+
+  function reviewState(problem, today = dateKey(new Date())) {
+    if (problem.retryHistory?.at(-1)?.outcome === "independent" && problem.status === "Solved") return "completed";
+    if (!problem.nextReviewAt) return "unscheduled";
+    return problem.nextReviewAt <= today ? "due" : "upcoming";
+  }
+
   function buildProblemContext(problem, input = {}) {
     if (!problem?.name?.trim()) throw new Error("请先选择已记录题目，或填写自定义题目名称。");
     const statement = String(input.statement || "").trim();
@@ -148,7 +196,10 @@
       `难度：${problem.rating || "未知"}；标签：${problem.tags?.join("、") || "未知"}`,
       `当前状态：${status}`,
       problem.source === "manual" ? "这是一条手动添加的题目记录，提交次数可能没有同步。" : problem.source === "custom" ? "" : `错误提交 ${problem.wrongCount || 0} 次；通过提交 ${problem.acceptedCount || 0} 次。`,
-      problem.reviewCount ? `已复习 ${problem.reviewCount} 次${problem.lastReview ? `；最近复习：${problem.lastReview}` : ""}。` : ""
+      problem.reviewCount ? `已复习 ${problem.reviewCount} 次${problem.lastReview ? `；最近复习：${problem.lastReview}` : ""}。` : "",
+      problem.initialThought ? `当时的思路：${problem.initialThought}` : "",
+      problem.errorReason ? `记录的错误原因：${problem.errorReason}` : "",
+      problem.nextReviewAt ? `计划重做日期：${problem.nextReviewAt}` : ""
     ].filter(Boolean);
     const supplied = [
       statement ? `题目描述、输入输出或关键条件：\n${statement}` : "题目描述：本次未提供。",
@@ -179,7 +230,7 @@
     ].join("\n\n");
   }
 
-  const api = { STORAGE_KEY, keyFor, emptyProfile, normalizeProblem, loadState, activeProfile, mergeSubmissions, analyze, recommend, buildProblemContext, buildStudyPrompt, buildErrorAnalysisPrompt };
+  const api = { STORAGE_KEY, keyFor, emptyProfile, normalizeProblem, loadState, activeProfile, mergeSubmissions, analyze, recommend, saveReviewPlan, recordRetry, reviewState, dateKey, addDays, buildProblemContext, buildStudyPrompt, buildErrorAnalysisPrompt };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.AlgorithmCore = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);
