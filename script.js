@@ -165,6 +165,7 @@ function reviewPanel(item) {
     event.preventDefault();
     try {
       Object.assign(item, Core.saveReviewPlan(item, { initialThought: thought.value, errorReason: reason.value, nextReviewAt: date.value }));
+      expandedReviewId = item.id;
       save(); render();
     } catch (error) { message.textContent = error.message; }
   });
@@ -177,6 +178,7 @@ function reviewPanel(item) {
     button.disabled = !item.initialThought || !item.errorReason || !item.nextReviewAt;
     button.addEventListener("click", () => {
       Object.assign(item, Core.recordRetry(item, key));
+      expandedReviewId = item.id;
       save(); render();
     });
     outcome.append(button);
